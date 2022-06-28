@@ -1,0 +1,17 @@
+spring:
+  mail:
+    default-encoding: UTF-8
+    host: smtp.gmail.com
+    username: desofme@gmail.com
+    password: mpqdocveiolplzmw
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            required: true
+            enable: true
+          timeout: 6000
+    protocol: smtp
+    test-connection: false
