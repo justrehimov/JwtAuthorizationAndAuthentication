@@ -19,7 +19,10 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Role saveRole(Role role) {
-        return roleRepo.save(role);
+        Role savedRole = null;
+        if(!roleRepo.findByRoleName(role.getRoleName()).isPresent())
+               savedRole = roleRepo.save(role);
+        return savedRole;
     }
 
     @Override

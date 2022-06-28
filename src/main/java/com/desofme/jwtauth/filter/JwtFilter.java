@@ -2,6 +2,7 @@ package com.desofme.jwtauth.filter;
 
 import com.desofme.jwtauth.auth.User;
 import com.desofme.jwtauth.dto.response.ResponseStatus;
+import com.desofme.jwtauth.dto.response.SingleStatus;
 import com.desofme.jwtauth.exception.CustomException;
 import com.desofme.jwtauth.exception.StatusCode;
 import com.desofme.jwtauth.exception.StatusMessage;
@@ -33,8 +34,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(request.getServletPath().equals("/auth/login") || request.getServletPath().equals("/auth/confirm/")
-        || request.getServletPath().equals("/auth/refresh")){
+        if(request.getServletPath().equals("/auth/login") || request.getServletPath().startsWith("/auth/confirm/")
+        || request.getServletPath().equals("/auth/refresh") || request.getServletPath().equals("/auth/register")
+        || request.getServletPath().equals("/auth/logout")){
             filterChain.doFilter(request,response);
         }else{
             try {
@@ -52,14 +54,15 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     filterChain.doFilter(request, response);
                 } else {
-                    filterChain.doFilter(request, response);
+                    ResponseStatus responseStatus = new ResponseStatus(StatusCode.JWT_IS_NOT_VALID, StatusMessage.JWT_IS_NOT_VALID);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    new ObjectMapper().writeValue(response.getOutputStream(),new SingleStatus<ResponseStatus>(responseStatus));
                 }
             }catch (JwtException ex){
                 log.error(ex.getMessage());
                 ResponseStatus responseStatus = new ResponseStatus(StatusCode.JWT_HAS_EXPIRED, ex.getMessage());
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                new ObjectMapper().writeValue(response.getOutputStream(),responseStatus);
+                new ObjectMapper().writeValue(response.getOutputStream(),new SingleStatus<ResponseStatus>(responseStatus));
             }
         }
     }
